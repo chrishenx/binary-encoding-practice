@@ -1,0 +1,42 @@
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+
+#include <QMainWindow>
+
+#include <QLinkedList>
+
+class QCustomPlot;
+class QCheckBox;
+
+namespace Ui {
+class MainWindow;
+}
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
+
+private slots:
+    void on_messageLineEdit_textEdited(const QString &input);
+    void on_pushButton_clicked();
+
+private:
+    Ui::MainWindow *ui;
+
+    static const int allowedMethodsChecked = 3; // Equal to the number of QCustomPlots
+    static const int statusBarMessageDuration = 4000; // ms
+
+    QLinkedList<QCheckBox*> methodCheckBoxes;
+    QLinkedList<QCheckBox*> selectedCheckBoxes;
+    QList<QCustomPlot*> customPlots;
+
+    void configureMethodCheckBoxes();
+    void configureLineEditFonts();
+    void configureCustomPlots();
+};
+
+#endif // MAINWINDOW_H
