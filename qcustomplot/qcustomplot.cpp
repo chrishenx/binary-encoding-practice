@@ -14570,12 +14570,12 @@ void QCPGraph::setData(const QVector<double> &key, const QVector<double> &value)
 }
 
 // chrishenx modification
-void QCPGraph::setData(const QVector<QPair<double, double>>& data)
+void QCPGraph::setData(const QVector<std::pair<double, double>>& data)
 {
     mData->clear();
     int n = data.size();
     QCPData newData;
-    for (int i=0; i<n; ++i)
+    for (int i=n-1; i>=0; --i)
     {
       newData.key = data[i].first;
       newData.value = data[i].second;

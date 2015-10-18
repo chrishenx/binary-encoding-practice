@@ -55,7 +55,7 @@
 #endif
 
 // chrishenx modification
-#include <QPair>
+#include <utility>
 // chrishenx modification end
 
 class QCPPainter;
@@ -2547,7 +2547,7 @@ public:
   void setData(QCPDataMap *data, bool copy=false);
   void setData(const QVector<double> &key, const QVector<double> &value);
   // chrishenx modification
-  void setData(const QVector<QPair<double, double>>& data);
+  void setData(const QVector<std::pair<double, double> > &data);
   // chrishenx modification end
   void setDataKeyError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &keyError);
   void setDataKeyError(const QVector<double> &key, const QVector<double> &value, const QVector<double> &keyErrorMinus, const QVector<double> &keyErrorPlus);
