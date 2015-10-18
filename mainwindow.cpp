@@ -1,9 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <QCheckBox>
+#include "binaryencoder.h"
 
-#include <QDebug>
+#include <QCheckBox>
+#include <QDebug> // TODO Delete qDebug and its references when the project is ready
+
+using namespace chrishenx;
 
 static QString hex2bin(const QString& hex);
 
@@ -42,7 +45,7 @@ void MainWindow::configureMethodCheckBoxes()
                 }
             } else {
                 // Branch 2
-                if (selectedCheckBoxes.size() == allowedMethodsChecked) {
+                if (selectedCheckBoxes.size() == ALLOWED_METHODS_CHECKED) {
                     selectedCheckBoxes.front()->setChecked(false);
                     // Executing Branch 1 concurrently on another QCheckBox
                 }
@@ -71,6 +74,12 @@ void MainWindow::configureCustomPlots()
                 << ui->cod1Plot
                 << ui->cod2Plot
                 << ui->cod3Plot;
+    for (QCustomPlot* customPlot : customPlots) {
+        auto graph = customPlot->addGraph(0);
+        QPen pen = graph->pen();
+        pen.setWidth(3);
+        graph->setPen(pen);
+    }
 }
 
 void MainWindow::on_messageLineEdit_textEdited(const QString &input)
@@ -91,9 +100,22 @@ void MainWindow::on_messageLineEdit_textEdited(const QString &input)
 
 void MainWindow::on_pushButton_clicked()
 {
-    qDebug() << selectedCheckBoxes.size();
-    if (selectedCheckBoxes.size() != allowedMethodsChecked) {
-        ui->statusBar->showMessage("Selecciona 3 métodos por lo menos", statusBarMessageDuration);
+    if (selectedCheckBoxes.size() != ALLOWED_METHODS_CHECKED) {
+        ui->statusBar->showMessage("Selecciona 3 métodos.", STATUS_BAR_MESSAGE_DURATIOn);
+    } else {
+        QString message = ui->binaryMessageLineEdit->text();
+        if (message.isEmpty()) {
+            ui->statusBar->showMessage("Introduce tu mensage.", STATUS_BAR_MESSAGE_DURATIOn);
+        } else {
+            BinaryEncoder binaryEncoder(ui->binaryMessageLineEdit->text());
+            if (!ui->clockPlot->graphCount()) {
+                ui->clockPlot->addGraph();
+            }
+            ui->clockPlot->graph(0)->setData(binaryEncoder.generateClock());
+            ui->clockPlot->xAxis->setRange(0, binaryEncoder.timeMax());
+            ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+            ui->clockPlot->replot();
+        }
     }
 }
 
