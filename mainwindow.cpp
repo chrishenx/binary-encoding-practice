@@ -155,14 +155,16 @@ void MainWindow::on_pushButton_clicked()
       ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
       ui->clockPlot->replot();
 
-      ui->cod1Plot->graph(0)->setData(binaryEncoder.generateTTL());
+      ui->cod1Plot->graph(0)->setData(binaryEncoder.generateManchester());
       ui->cod1Plot->xAxis->setRange(0, binaryEncoder.timeMax());
-      ui->cod1Plot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+      ui->cod1Plot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE,
+                                     BinaryEncoder::DEFAULT_AMPLITUDE);
       ui->cod1Plot->replot();
 
-      ui->cod2Plot->graph(0)->setData(binaryEncoder.generateNRZI());
+      ui->cod2Plot->graph(0)->setData(binaryEncoder.generateDManchester());
       ui->cod2Plot->xAxis->setRange(0, binaryEncoder.timeMax());
-      ui->cod2Plot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+      ui->cod2Plot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE,
+                                     BinaryEncoder::DEFAULT_AMPLITUDE);
       ui->cod2Plot->replot();
     }
   }

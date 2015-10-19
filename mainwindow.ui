@@ -136,7 +136,7 @@
         </size>
        </property>
        <property name="title">
-        <string>Seleccionar 3 métodos de codificación</string>
+        <string>Seleccionar 3 métodos de codificación:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
