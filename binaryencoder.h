@@ -30,43 +30,43 @@
 
 namespace chrishenx {
 
-    class BinaryEncoder
-    {
-    public:
-        using Data = QVector<std::pair<double, double>>;
+  class BinaryEncoder
+  {
+  public:
+    using Data = QVector<std::pair<double, double>>;
 
-        static const double DEFAULT_TRANS_SPEED; // In seconds
-        static const double DEFAULT_AMPLITUDE; // In volts
+    static const double DEFAULT_TRANS_SPEED; // In seconds
+    static const double DEFAULT_AMPLITUDE; // In volts
 
-        BinaryEncoder(QString valueToEncode)
-            : BinaryEncoder(valueToEncode, DEFAULT_TRANS_SPEED) {}
+    BinaryEncoder(QString valueToEncode)
+      : BinaryEncoder(valueToEncode, DEFAULT_TRANS_SPEED) {}
 
-        BinaryEncoder(QString valueToEncode, double transSpeed)
-                : BinaryEncoder(valueToEncode, transSpeed, DEFAULT_AMPLITUDE) {}
+    BinaryEncoder(QString valueToEncode, double transSpeed)
+      : BinaryEncoder(valueToEncode, transSpeed, DEFAULT_AMPLITUDE) {}
 
-        BinaryEncoder(QString valueToEncode, double transSpeed, double amplitude)
-                : mValueToEncode(valueToEncode), mTransSpeed(transSpeed),mAmplitud(amplitude) {
-            mN = valueToEncode.length();
-        }
+    BinaryEncoder(QString valueToEncode, double transSpeed, double amplitude)
+        : mValueToEncode(valueToEncode), mTransSpeed(transSpeed),mAmplitude(amplitude) {
+      mN = valueToEncode.length();
+    }
 
-        Data generateClock();
-        Data generateTTL();
-        Data generateNRZL();
-        Data generateNRZI();
-        Data generateBipolar();
-        Data generatePseudoternary();
-        Data generateManchester();
-        Data generateDManchester();
+    Data generateClock();
+    Data generateTTL();
+    Data generateNRZL();
+    Data generateNRZI();
+    Data generateBipolar();
+    Data generatePseudoternary();
+    Data generateManchester();
+    Data generateDManchester();
 
-        double timeMax() const { return mLastTimeMax; }
+    double timeMax() const { return mTimeMax; }
 
-    private:
-        QString mValueToEncode;
-        double mTransSpeed; // Transmission speed
-        double mAmplitud; // Represent volts
-        double mTimeMax = 0;
-        int mN;
-    };
+  private:
+    QString mValueToEncode;
+    double mTransSpeed; // Transmission speed
+    double mAmplitude; // Represent volts
+    double mTimeMax = 0;
+    int mN;
+  };
 
 } // chrishenx namespace end
 

@@ -34,17 +34,76 @@ const double BinaryEncoder::DEFAULT_AMPLITUDE = 5;
 
 BinaryEncoder::Data BinaryEncoder::generateClock()
 {
-    const int POINT_COUNT = mN * 4; // Four points for each bit
-    Data clock(POINT_COUNT);
-    const double f = mTransSpeed * 2; // Clock frecuency
-    const double T2 = 1.0 / f; // Clock period divided
-    double t = 0; // current time
-    for (int i = 0; i < POINT_COUNT; i += 4) {
-        clock[i] = make_pair(t, 0.0);
-        clock[i + 1] = make_pair(t += T2, 0.0);
-        clock[i + 2] = make_pair(t, mAmplitud);
-        clock[i + 3] = make_pair(t += T2, mAmplitud);
+  static const int POINTS_PER_BIT = 4;
+  const int POINT_COUNT = mN * POINTS_PER_BIT; // Four points for each bit
+  Data clock(POINT_COUNT);
+  const double f = mTransSpeed * 2; // Clock frecuency
+  const double T = 1.0 / f; // Clock period divided
+  double t = 0.0; // current time
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
+  {
+    clock[i] = make_pair(t, 0.0);
+    clock[i + 1] = make_pair(t += T, 0.0);
+    clock[i + 2] = make_pair(t, mAmplitude);
+    clock[i + 3] = make_pair(t += T, mAmplitude);
+  }
+  mTimeMax = t;
+  return clock;
+}
+
+BinaryEncoder::Data BinaryEncoder::generateTTL()
+{
+  static const int POINTS_PER_BIT = 2;
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
+  Data ttl(POINT_COUNT);
+  const double f = mTransSpeed;
+  const double T = 1.0 / f;
+  double t = 0.0;
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
+  {
+    double amplitude = mValueToEncode[i / 2].digitValue() * mAmplitude;
+    ttl[i] = make_pair(t, amplitude);
+    ttl[i + 1] = make_pair(t += T, amplitude);
+  }
+  mTimeMax = t;
+  return ttl;
+}
+
+BinaryEncoder::Data BinaryEncoder::generateNRZL()
+{
+  static const int POINTS_PER_BIT = 2;
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
+  Data nrzl(POINT_COUNT);
+  const double f = mTransSpeed;
+  const double T = 1.0 / f;
+  double t = 0.0;
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT) {
+    double amplitude = mValueToEncode[i / 2].digitValue() ? 0 : mAmplitude;
+    nrzl[i] = make_pair(t, amplitude);
+    nrzl[i + 1] = make_pair(t += T, amplitude);
+  }
+  mTimeMax = t;
+  return nrzl;
+}
+
+BinaryEncoder::Data BinaryEncoder::generateNRZI()
+{
+  static const int POINTS_PER_BIT = 2;
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
+  Data nrzi(POINT_COUNT);
+  const double f = mTransSpeed;
+  const double T = 1.0 / f;
+  double t = 0.0;
+  double amplitude = 0;
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
+  {
+    if (mValueToEncode[i / 2].digitValue()) // Transition?
+    {
+      amplitude = amplitude == mAmplitude ? 0 : mAmplitude;
     }
-    mTimeMax = t;
-    return clock;
+    nrzi[i] = make_pair(t, amplitude);
+    nrzi[i + 1] = make_pair(t += T, amplitude);
+  }
+  mTimeMax = t;
+  return nrzi;
 }
