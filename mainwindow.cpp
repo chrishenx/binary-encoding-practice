@@ -60,6 +60,10 @@ void MainWindow::configureMethodCheckBoxes()
           }
           selectedCheckBoxes << checkBox;
       }
+      if (checkBox == ui->mniv_checkBox)
+      {
+        ui->levelsGroupBox->setEnabled(toggled);
+      }
     });
   }
   ui->ttl_checkBox->click();
