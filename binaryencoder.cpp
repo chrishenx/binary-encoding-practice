@@ -35,7 +35,7 @@ const double BinaryEncoder::DEFAULT_AMPLITUDE = 5;
 BinaryEncoder::Data BinaryEncoder::generateClock()
 {
   static const int POINTS_PER_BIT = 4;
-  const int POINT_COUNT = mN * POINTS_PER_BIT; // Four points for each bit
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
   Data clock(POINT_COUNT);
   const double f = mTransSpeed * 2; // Clock frecuency
   const double T = 1.0 / f; // Clock period divided
@@ -61,7 +61,7 @@ BinaryEncoder::Data BinaryEncoder::generateTTL()
   double t = 0.0;
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
   {
-    double amplitude = mValueToEncode[i / 2].digitValue() * mAmplitude;
+    const double amplitude = mValueToEncode[i / POINTS_PER_BIT].digitValue() * mAmplitude;
     ttl[i] = make_pair(t, amplitude);
     ttl[i + 1] = make_pair(t += T, amplitude);
   }
@@ -78,7 +78,7 @@ BinaryEncoder::Data BinaryEncoder::generateNRZL()
   const double T = 1.0 / f;
   double t = 0.0;
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT) {
-    double amplitude = mValueToEncode[i / 2].digitValue() ? 0 : mAmplitude;
+    const double amplitude = mValueToEncode[i / POINTS_PER_BIT].digitValue() ? 0 : mAmplitude;
     nrzl[i] = make_pair(t, amplitude);
     nrzl[i + 1] = make_pair(t += T, amplitude);
   }
@@ -97,7 +97,7 @@ BinaryEncoder::Data BinaryEncoder::generateNRZI()
   double amplitude = 0;
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
   {
-    if (mValueToEncode[i / 2].digitValue()) // Transition?
+    if (mValueToEncode[i / POINTS_PER_BIT].digitValue()) // Transition?
     {
       amplitude = amplitude == mAmplitude ? 0 : mAmplitude;
     }
@@ -106,4 +106,108 @@ BinaryEncoder::Data BinaryEncoder::generateNRZI()
   }
   mTimeMax = t;
   return nrzi;
+}
+
+BinaryEncoder::Data BinaryEncoder::generateBipolar()
+{
+  static const int POINTS_PER_BIT = 2;
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
+  Data bipolar(POINT_COUNT);
+  const double f = mTransSpeed;
+  const double T = 1.0 / f;
+  double t = 0.0;
+  double multiplier = 1;
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
+  {
+    const int bit = mValueToEncode[i / POINTS_PER_BIT].digitValue();
+    const double amplitude = bit ? multiplier * mAmplitude : 0;
+    bipolar[i] = make_pair(t, amplitude);
+    bipolar[i + 1] = make_pair(t += T, amplitude);
+    if (bit)
+    {
+      multiplier *= -1;
+    }
+  }
+  mTimeMax = t;
+  return bipolar;
+}
+
+BinaryEncoder::Data BinaryEncoder::generatePseudoternary()
+{
+  static const int POINTS_PER_BIT = 2;
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
+  Data pseudoternary(POINT_COUNT);
+  const double f = mTransSpeed;
+  const double T = 1.0 / f;
+  double t = 0.0;
+  double multiplier = 1;
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
+  {
+    const int bit = mValueToEncode[i / POINTS_PER_BIT].digitValue();
+    const double amplitude = !bit ? multiplier * mAmplitude : 0;
+    pseudoternary[i] = make_pair(t, amplitude);
+    pseudoternary[i + 1] = make_pair(t += T, amplitude);
+    if (!bit)
+    {
+      multiplier *= -1;
+    }
+  }
+  mTimeMax = t;
+  return pseudoternary;
+}
+
+BinaryEncoder::Data BinaryEncoder::generateManchester()
+{
+  static const int POINTS_PER_BIT = 4;
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
+  Data manchester(POINT_COUNT);
+  const double f = mTransSpeed * 2; // Clock frecuency
+  const double T = 1.0 / f; // Clock period divided
+  double t = 0.0; // current time
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
+  {
+    const int bit = mValueToEncode[i / POINTS_PER_BIT].digitValue();
+    const double amp1 = bit ? -mAmplitude : mAmplitude;
+    const double amp2 = -amp1;
+    manchester[i] = make_pair(t, amp1);
+    manchester[i + 1] = make_pair(t += T, amp1);
+    manchester[i + 2] = make_pair(t, amp2);
+    manchester[i + 3] = make_pair(t += T, amp2);
+  }
+  mTimeMax = t;
+  return manchester;
+}
+
+BinaryEncoder::Data BinaryEncoder::generateDManchester()
+{
+  static const int POINTS_PER_BIT = 4;
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
+  Data manchester(POINT_COUNT);
+  const double f = mTransSpeed * 2; // Clock frecuency
+  const double T = 1.0 / f; // Clock period divided
+  double t = 0.0; // current time
+  double amplitude = mAmplitude;
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
+  {
+    manchester[i] = make_pair(t, amplitude);
+    if (mValueToEncode[i / POINTS_PER_BIT].digitValue())
+    { // Make no transition
+      manchester[i + 1] = make_pair(t += T, amplitude);
+      manchester[i + 2] = make_pair(t, amplitude *= -1);
+      manchester[i + 3] = make_pair(t += T, amplitude);
+    }
+    else
+    { // Make transition
+      manchester[i + 1] = make_pair(t, amplitude *= -1);
+      manchester[i + 2] = make_pair(t += T, amplitude);
+      manchester[i + 3] = make_pair(t, amplitude *= -1);
+      t += T;
+      if (i + 4 == POINT_COUNT) {
+        // When the input ends with zero, its necesary add one point
+        manchester << make_pair(t, amplitude);
+      }
+    }
+  }
+  mTimeMax = t;
+  return manchester;
 }
