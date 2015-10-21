@@ -37,7 +37,7 @@ void MainWindow::configureMethodCheckBoxes()
                    << ui->pset_checkBox
                    << ui->manch_checkBox
                    << ui->manchd_checkBox
-                   << ui->mniv_checkBox;
+                   << ui->mlevel_checkBox;
   for (QCheckBox* checkBox : methodCheckBoxes)
   {
     connect(checkBox, &QCheckBox::toggled, [this, checkBox](bool toggled)
@@ -60,7 +60,7 @@ void MainWindow::configureMethodCheckBoxes()
           }
           selectedCheckBoxes << checkBox;
       }
-      if (checkBox == ui->mniv_checkBox)
+      if (checkBox == ui->mlevel_checkBox)
       {
         ui->levelsGroupBox->setEnabled(toggled);
       }
@@ -98,7 +98,7 @@ void MainWindow::configureCustomPlots()
     }
     graph->setPen(pen);
   }
-
+  customPlots.pop_front(); // Deleting clockPlot
 }
 
 static bool isHexadecimal(const QString& value)
@@ -153,24 +153,68 @@ void MainWindow::on_pushButton_clicked()
     else
     {
       // All QCUstomPlots' graphs most exist at this point
-      BinaryEncoder binaryEncoder(ui->binaryMessageLineEdit->text());
-      ui->clockPlot->graph(0)->setData(binaryEncoder.generateClock());
-      ui->clockPlot->xAxis->setRange(0, binaryEncoder.timeMax());
-      ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
-      ui->clockPlot->replot();
-
-      ui->cod1Plot->graph(0)->setData(binaryEncoder.generateManchester());
-      ui->cod1Plot->xAxis->setRange(0, binaryEncoder.timeMax());
-      ui->cod1Plot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE,
-                                     BinaryEncoder::DEFAULT_AMPLITUDE);
-      ui->cod1Plot->replot();
-
-      ui->cod2Plot->graph(0)->setData(binaryEncoder.generateDManchester());
-      ui->cod2Plot->xAxis->setRange(0, binaryEncoder.timeMax());
-      ui->cod2Plot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE,
-                                     BinaryEncoder::DEFAULT_AMPLITUDE);
-      ui->cod2Plot->replot();
+      plotSelectedMethods();
     }
+  }
+}
+
+void MainWindow::plotSelectedMethods()
+{
+  BinaryEncoder binaryEncoder(ui->binaryMessageLineEdit->text());
+  // Ploting the reference clock signal
+  ui->clockPlot->graph(0)->setData(binaryEncoder.generateClock());
+  ui->clockPlot->xAxis->setRange(0, binaryEncoder.timeMax());
+  ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+  ui->clockPlot->replot();
+  auto customPlotIt = customPlots.begin();
+  for (const QCheckBox* selectedCheckBox : selectedCheckBoxes)
+  {
+    QCustomPlot* customPlot = *customPlotIt;
+    if (selectedCheckBox == ui->ttl_checkBox)
+    {
+      customPlot->graph(0)->setData(binaryEncoder.generateTTL());
+      ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+    }
+    else if (selectedCheckBox == ui->nrzl_checkBox)
+    {
+      customPlot->graph(0)->setData(binaryEncoder.generateNRZL());
+      ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+    }
+    else if (selectedCheckBox == ui->nrzi_checkBox)
+    {
+      customPlot->graph(0)->setData(binaryEncoder.generateNRZI());
+      ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+    }
+    else if (selectedCheckBox == ui->bip_checkBox)
+    {
+      customPlot->graph(0)->setData(binaryEncoder.generateBipolar());
+      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+    }
+    else if (selectedCheckBox == ui->pset_checkBox)
+    {
+      customPlot->graph(0)->setData(binaryEncoder.generatePseudoternary());
+      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+    }
+    else if (selectedCheckBox == ui->manch_checkBox)
+    {
+      customPlot->graph(0)->setData(binaryEncoder.generateManchester());
+      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+    }
+    else if (selectedCheckBox == ui->manchd_checkBox)
+    {
+      customPlot->graph(0)->setData(binaryEncoder.generateDManchester());
+      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+    }
+    else if (selectedCheckBox == ui->mlevel_checkBox)
+    {
+      const int level = ui->l2radioButton->isChecked() ? 2 :
+                  ui->l4radioButton->isChecked() ? 4 : 8;
+      customPlot->graph(0)->setData(binaryEncoder.generateMultilevel(level));
+      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+    }
+    customPlot->xAxis->setRange(0, binaryEncoder.timeMax());
+    customPlot->replot();
+    customPlotIt++;
   }
 }
 

@@ -14,32 +14,33 @@ class MainWindow;
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+  explicit MainWindow(QWidget *parent = 0);
+  ~MainWindow();
 
 private slots:
-    void on_messageLineEdit_textEdited(const QString &input);
-    void on_pushButton_clicked();
+  void on_messageLineEdit_textEdited(const QString &input);
+  void on_pushButton_clicked();
 
 
 private:
-    Ui::MainWindow *ui;
+  Ui::MainWindow *ui;
 
-    static const int ALLOWED_METHODS_CHECKED = 3; // Equal to the number of QCustomPlots
-    static const int STATUS_BAR_MESSAGE_DURATION = 4000; // ms
+  static const int ALLOWED_METHODS_CHECKED = 3; // Equal to the number of QCustomPlots
+  static const int STATUS_BAR_MESSAGE_DURATION = 4000; // ms
 
-    QLinkedList<QCheckBox*> methodCheckBoxes;
-    QLinkedList<QCheckBox*> selectedCheckBoxes;
-    QList<QCustomPlot*> customPlots;
+  QLinkedList<QCheckBox*> methodCheckBoxes;
+  QLinkedList<QCheckBox*> selectedCheckBoxes;
+  QList<QCustomPlot*> customPlots;
 
-    QString message;
+  QString message;
 
-    void configureMethodCheckBoxes();
-    void configureLineEditFonts();
-    void configureCustomPlots();
+  void configureMethodCheckBoxes();
+  void configureLineEditFonts();
+  void configureCustomPlots();
+  void plotSelectedMethods();
 };
 
 #endif // MAINWINDOW_H
