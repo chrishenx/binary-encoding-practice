@@ -38,7 +38,7 @@ BinaryEncoder::Data BinaryEncoder::generateClock()
   const int POINT_COUNT = mN * POINTS_PER_BIT;
   Data clock(POINT_COUNT);
   const double f = mTransSpeed * 2; // Clock frecuency
-  const double T = 1.0 / f; // Clock period divided
+  const double T = 1.0 / f; // Clock period
   double t = 0.0; // current time
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
   {
@@ -162,7 +162,7 @@ BinaryEncoder::Data BinaryEncoder::generateManchester()
   const int POINT_COUNT = mN * POINTS_PER_BIT;
   Data manchester(POINT_COUNT);
   const double f = mTransSpeed * 2; // Clock frecuency
-  const double T = 1.0 / f; // Clock period divided
+  const double T = 1.0 / f; // Clock period
   double t = 0.0; // current time
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
   {
@@ -184,7 +184,7 @@ BinaryEncoder::Data BinaryEncoder::generateDManchester()
   const int POINT_COUNT = mN * POINTS_PER_BIT;
   Data manchester(POINT_COUNT);
   const double f = mTransSpeed * 2; // Clock frecuency
-  const double T = 1.0 / f; // Clock period divided
+  const double T = 1.0 / f; // Clock period
   double t = 0.0; // current time
   double amplitude = mAmplitude;
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
@@ -210,4 +210,33 @@ BinaryEncoder::Data BinaryEncoder::generateDManchester()
   }
   mTimeMax = t;
   return manchester;
+}
+
+BinaryEncoder::Data BinaryEncoder::generateMultilevel(int levels)
+{
+  static const int POINTS_PER_BIT = 2;
+  const int POINT_COUNT = mN * POINTS_PER_BIT;
+  Data multilevel(POINT_COUNT);
+  const double f = mTransSpeed * 2; // Clock frecuency
+  const double T = 1.0 / f; // Clock period
+  double t = 0.0;
+  double amplitude = -mAmplitude;
+  const double levelIncrement = mAmplitude / (levels - 1);
+  for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
+  {
+    if (mValueToEncode[i / POINTS_PER_BIT].digitValue())
+    {
+      if (amplitude < mAmplitude)
+      {
+        amplitude += levelIncrement;
+      }
+      else if (amplitude > -mAmplitude)
+      {
+        amplitude -= levelIncrement;
+      }
+    }
+    multilevel[i] = make_pair(t, amplitude);
+    multilevel[i + 1] = make_pair(t += T, amplitude);
+  }
+  return multilevel;
 }

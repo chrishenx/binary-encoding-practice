@@ -35,6 +35,10 @@ namespace chrishenx {
   public:
     using Data = QVector<std::pair<double, double>>;
 
+      enum class Method {
+          TTL, NRZL, NRZI, BIPOLAR, PSEUDOTERNARY, MANCHESTER, DMANCHESTER
+      };
+
     static const double DEFAULT_TRANS_SPEED; // In seconds
     static const double DEFAULT_AMPLITUDE; // In volts
 
@@ -57,6 +61,7 @@ namespace chrishenx {
     Data generatePseudoternary();
     Data generateManchester();
     Data generateDManchester();
+    Data generateMultilevel(int levels);
 
     double timeMax() const { return mTimeMax; }
 
