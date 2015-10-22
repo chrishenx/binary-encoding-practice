@@ -83,18 +83,34 @@ void MainWindow::configureLineEditFonts()
 
 void MainWindow::configureCustomPlots()
 {
+  ui->clockPlot->plotLayout()->insertRow(0);
+  ui->clockPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->clockPlot, "Señal de relog"));
+  ui->clockPlot->setToolTip("Señal de relog");
+  QCPPlotTitle* plotTitle = (QCPPlotTitle*) ui->clockPlot->plotLayout()->element(0, 0);
+  QFont titleFont = plotTitle->font();
+  titleFont.setPointSize(12);
+  plotTitle->setFont(titleFont);
   customPlots << ui->clockPlot
               << ui->cod1Plot
               << ui->cod2Plot
               << ui->cod3Plot;
   for (QCustomPlot* customPlot : customPlots)
   {
-    auto graph = customPlot->addGraph(0);
+    QCPGraph* graph = customPlot->addGraph(0);
     QPen pen = graph->pen();
     pen.setWidthF(3.5);
     if (customPlot == ui->clockPlot)
     {
       pen.setColor(QColor(Qt::red));
+    }
+    else
+    {
+      customPlot->plotLayout()->insertRow(0);
+      customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, " "));
+      plotTitle = (QCPPlotTitle*) customPlot->plotLayout()->element(0, 0);
+      titleFont = plotTitle->font();
+      titleFont.setPointSize(12);
+      plotTitle->setFont(titleFont);
     }
     graph->setPen(pen);
   }
@@ -161,58 +177,81 @@ void MainWindow::on_pushButton_clicked()
 void MainWindow::plotSelectedMethods()
 {
   BinaryEncoder binaryEncoder(ui->binaryMessageLineEdit->text());
+
+  const double SIGNAL_AMPLITUDE = binaryEncoder.amplitude();
+  const int MSG_LENGHT = binaryEncoder.messageLength();
+
   // Ploting the reference clock signal
   ui->clockPlot->graph(0)->setData(binaryEncoder.generateClock());
   ui->clockPlot->xAxis->setRange(0, binaryEncoder.timeMax());
-  ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+  ui->clockPlot->yAxis->setRange(0, SIGNAL_AMPLITUDE);
+  ui->clockPlot->xAxis->setAutoTickCount(MSG_LENGHT - 1);
   ui->clockPlot->replot();
   auto customPlotIt = customPlots.begin();
   for (const QCheckBox* selectedCheckBox : selectedCheckBoxes)
   {
     QCustomPlot* customPlot = *customPlotIt;
+    QCPPlotTitle* plotTitle = (QCPPlotTitle*) customPlot->plotLayout()->element(0, 0);
     if (selectedCheckBox == ui->ttl_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateTTL());
-      ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+      customPlot->yAxis->setRange(0, SIGNAL_AMPLITUDE);
+      customPlot->setToolTip("Codificación TTL");
+      plotTitle->setText("Codificación TTL");
     }
     else if (selectedCheckBox == ui->nrzl_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateNRZL());
-      ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+      customPlot->yAxis->setRange(0, SIGNAL_AMPLITUDE);
+      customPlot->setToolTip("Codificación NRZ-L");
+      plotTitle->setText("Codificación NRZ-L");
     }
     else if (selectedCheckBox == ui->nrzi_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateNRZI());
-      ui->clockPlot->yAxis->setRange(0, BinaryEncoder::DEFAULT_AMPLITUDE);
+      customPlot->yAxis->setRange(0, SIGNAL_AMPLITUDE);
+      customPlot->setToolTip("Codificación NRZ-I");
+      plotTitle->setText("Codificación NRZ-I");
     }
     else if (selectedCheckBox == ui->bip_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateBipolar());
-      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+      customPlot->yAxis->setRange(-SIGNAL_AMPLITUDE, SIGNAL_AMPLITUDE);
+      customPlot->setToolTip("Codificación Bilineal");
+      plotTitle->setText("Codificación Bilineal");
     }
     else if (selectedCheckBox == ui->pset_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generatePseudoternary());
-      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+      customPlot->yAxis->setRange(-SIGNAL_AMPLITUDE, SIGNAL_AMPLITUDE);
+      customPlot->setToolTip("Codificación Pseudo-ternaria");
+      plotTitle->setText("Codificación Pseudo-ternaria");
     }
     else if (selectedCheckBox == ui->manch_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateManchester());
-      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+      customPlot->yAxis->setRange(-SIGNAL_AMPLITUDE, SIGNAL_AMPLITUDE);
+      customPlot->setToolTip("Codificación Manchester");
+      plotTitle->setText("Codificación Manchester");
     }
     else if (selectedCheckBox == ui->manchd_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateDManchester());
-      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+      customPlot->yAxis->setRange(-SIGNAL_AMPLITUDE, SIGNAL_AMPLITUDE);
+      customPlot->setToolTip("Codificación Manchester diferencial");
+      plotTitle->setText("Codificación Manchester diferencial");
     }
     else if (selectedCheckBox == ui->mlevel_checkBox)
     {
-      const int level = ui->l2radioButton->isChecked() ? 2 :
+      const int levels = ui->l2radioButton->isChecked() ? 2 :
                   ui->l4radioButton->isChecked() ? 4 : 8;
-      customPlot->graph(0)->setData(binaryEncoder.generateMultilevel(level));
-      ui->clockPlot->yAxis->setRange(-BinaryEncoder::DEFAULT_AMPLITUDE, BinaryEncoder::DEFAULT_AMPLITUDE);
+      customPlot->graph(0)->setData(binaryEncoder.generateMultilevel(levels));
+      customPlot->yAxis->setRange(-SIGNAL_AMPLITUDE, SIGNAL_AMPLITUDE);
+      customPlot->setToolTip(QString("Codificación de %1 niveles").arg(levels));
+      plotTitle->setText(QString("Codificación de %1 niveles").arg(levels));
     }
     customPlot->xAxis->setRange(0, binaryEncoder.timeMax());
+    customPlot->xAxis->setAutoTickCount(MSG_LENGHT - 1);
     customPlot->replot();
     customPlotIt++;
   }

@@ -276,7 +276,7 @@
          <bool>false</bool>
         </property>
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -327,13 +327,16 @@
             </sizepolicy>
            </property>
            <property name="layoutDirection">
-            <enum>Qt::RightToLeft</enum>
+            <enum>Qt::LeftToRight</enum>
            </property>
            <property name="autoFillBackground">
             <bool>false</bool>
            </property>
            <property name="text">
             <string>2</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -346,7 +349,7 @@
             </sizepolicy>
            </property>
            <property name="layoutDirection">
-            <enum>Qt::RightToLeft</enum>
+            <enum>Qt::LeftToRight</enum>
            </property>
            <property name="text">
             <string>4</string>
@@ -362,7 +365,7 @@
             </sizepolicy>
            </property>
            <property name="layoutDirection">
-            <enum>Qt::RightToLeft</enum>
+            <enum>Qt::LeftToRight</enum>
            </property>
            <property name="text">
             <string>8</string>
