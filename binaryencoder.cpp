@@ -217,22 +217,37 @@ BinaryEncoder::Data BinaryEncoder::generateMultilevel(int levels)
   static const int POINTS_PER_BIT = 2;
   const int POINT_COUNT = mN * POINTS_PER_BIT;
   Data multilevel(POINT_COUNT);
-  const double f = mTransSpeed * 2; // Clock frecuency
+  const double f = mTransSpeed; // Clock frecuency
   const double T = 1.0 / f; // Clock period
   double t = 0.0;
-  double amplitude = -mAmplitude;
-  const double levelIncrement = mAmplitude / (levels - 1);
+  bool down = mValueToEncode[0].digitValue();
+  double amplitude = down ? mAmplitude : -mAmplitude;
+  const double levelIncrement = mAmplitude * 2 / (levels - 1);
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
   {
-    if (mValueToEncode[i / POINTS_PER_BIT].digitValue())
+    if (i != 0 && mValueToEncode[i / POINTS_PER_BIT].digitValue())
     {
-      if (amplitude < mAmplitude)
+      if (down)
       {
-        amplitude += levelIncrement;
+        if (amplitude > -mAmplitude)
+        {
+          amplitude -= levelIncrement;
+        }
+        else
+        {
+          down = false;
+        }
       }
-      else if (amplitude > -mAmplitude)
+      else // up
       {
-        amplitude -= levelIncrement;
+        if (amplitude < mAmplitude)
+        {
+          amplitude += levelIncrement;
+        }
+        else
+        {
+          down = true;
+        }
       }
     }
     multilevel[i] = make_pair(t, amplitude);

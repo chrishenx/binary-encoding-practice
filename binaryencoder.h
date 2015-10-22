@@ -53,6 +53,20 @@ namespace chrishenx {
       mN = valueToEncode.length();
     }
 
+    double currentPeriod() const  { return 1.0 / mTransSpeed; }
+
+    double transSpeed() const { return mTransSpeed; }
+    void setTransSpedd(double transSpeed) { mTransSpeed = transSpeed; }
+
+    double amplitude() const { return mAmplitude; }
+    void setAmplitude(double amplitude) { mAmplitude = amplitude; }
+
+    QString valueToEncode() const { return mValueToEncode; }
+    void setValueToEncode(QString valueToEncode) { mValueToEncode = valueToEncode; }
+
+    int messageLength() const { return mValueToEncode.length(); }
+
+    // Main methods
     Data generateClock();
     Data generateTTL();
     Data generateNRZL();
