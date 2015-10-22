@@ -14,9 +14,9 @@ TEMPLATE = app
 CONFIG += c++11
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
     qcustomplot/qcustomplot.cpp \
-    binaryencoder.cpp
+    binaryencoder.cpp \
+    mainwindow.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot/qcustomplot.h \
