@@ -227,6 +227,7 @@ BinaryEncoder::Data BinaryEncoder::generateMultilevel(int levels)
   {
     if (i != 0 && mValueToEncode[i / POINTS_PER_BIT].digitValue())
     {
+      //qDebug() << amplitude;
       if (down)
       {
         if (amplitude > -mAmplitude)
@@ -235,6 +236,7 @@ BinaryEncoder::Data BinaryEncoder::generateMultilevel(int levels)
         }
         else
         {
+          amplitude += levelIncrement; // Otherwise the effect comes on the next high level detected
           down = false;
         }
       }
@@ -246,6 +248,7 @@ BinaryEncoder::Data BinaryEncoder::generateMultilevel(int levels)
         }
         else
         {
+          amplitude -= levelIncrement; // Otherwise the effect comes on the next low level detected
           down = true;
         }
       }
