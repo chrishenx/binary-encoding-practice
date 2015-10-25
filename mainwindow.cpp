@@ -21,6 +21,13 @@ MainWindow::MainWindow(QWidget *parent) :
   configureLineEditFonts();
   configureMethodCheckBoxes();
   configureCustomPlots();
+
+#ifdef Q_OS_ANDROID
+
+  configureForAndroid();
+
+#endif
+
 }
 
 MainWindow::~MainWindow()
@@ -88,7 +95,7 @@ void MainWindow::configureCustomPlots()
   ui->clockPlot->setToolTip("Señal de relog");
   QCPPlotTitle* plotTitle = (QCPPlotTitle*) ui->clockPlot->plotLayout()->element(0, 0);
   QFont titleFont = plotTitle->font();
-  titleFont.setPointSize(12);
+  titleFont.setPointSize(11);
   plotTitle->setFont(titleFont);
   customPlots << ui->clockPlot
               << ui->cod1Plot
@@ -109,10 +116,18 @@ void MainWindow::configureCustomPlots()
       customPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(customPlot, " "));
       plotTitle = (QCPPlotTitle*) customPlot->plotLayout()->element(0, 0);
       titleFont = plotTitle->font();
-      titleFont.setPointSize(12);
+      titleFont.setPointSize(11);
       plotTitle->setFont(titleFont);
     }
     graph->setPen(pen);
+
+#ifdef Q_OS_ANDROID
+    QFont labelFont = customPlot->yAxis->tickLabelFont();
+    labelFont.setPointSize(6);
+    customPlot->yAxis->setTickLabelFont(labelFont);
+    customPlot->xAxis->setTickLabelFont(labelFont);
+#endif
+
   }
   customPlots.pop_front(); // Deleting clockPlot
 }
@@ -178,13 +193,14 @@ void MainWindow::plotSelectedMethods()
 {
   BinaryEncoder binaryEncoder(ui->binaryMessageLineEdit->text());
 
-  const double SIGNAL_AMPLITUDE = binaryEncoder.amplitude();
+  static const double ZERO_LOWER = -0.09;
+  const double SIGNAL_AMPLITUDE = binaryEncoder.amplitude() * 1.08;
   const int MSG_LENGHT = binaryEncoder.messageLength();
 
   // Ploting the reference clock signal
   ui->clockPlot->graph(0)->setData(binaryEncoder.generateClock());
   ui->clockPlot->xAxis->setRange(0, binaryEncoder.timeMax());
-  ui->clockPlot->yAxis->setRange(0, SIGNAL_AMPLITUDE);
+  ui->clockPlot->yAxis->setRange(ZERO_LOWER, SIGNAL_AMPLITUDE);
   ui->clockPlot->xAxis->setAutoTickCount(MSG_LENGHT - 1);
   ui->clockPlot->replot();
   auto customPlotIt = customPlots.begin();
@@ -195,21 +211,21 @@ void MainWindow::plotSelectedMethods()
     if (selectedCheckBox == ui->ttl_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateTTL());
-      customPlot->yAxis->setRange(0, SIGNAL_AMPLITUDE);
+      customPlot->yAxis->setRange(ZERO_LOWER, SIGNAL_AMPLITUDE);
       customPlot->setToolTip("Codificación TTL");
       plotTitle->setText("Codificación TTL");
     }
     else if (selectedCheckBox == ui->nrzl_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateNRZL());
-      customPlot->yAxis->setRange(0, SIGNAL_AMPLITUDE);
+      customPlot->yAxis->setRange(ZERO_LOWER, SIGNAL_AMPLITUDE);
       customPlot->setToolTip("Codificación NRZ-L");
       plotTitle->setText("Codificación NRZ-L");
     }
     else if (selectedCheckBox == ui->nrzi_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateNRZI());
-      customPlot->yAxis->setRange(0, SIGNAL_AMPLITUDE);
+      customPlot->yAxis->setRange(ZERO_LOWER, SIGNAL_AMPLITUDE);
       customPlot->setToolTip("Codificación NRZ-I");
       plotTitle->setText("Codificación NRZ-I");
     }
@@ -217,8 +233,8 @@ void MainWindow::plotSelectedMethods()
     {
       customPlot->graph(0)->setData(binaryEncoder.generateBipolar());
       customPlot->yAxis->setRange(-SIGNAL_AMPLITUDE, SIGNAL_AMPLITUDE);
-      customPlot->setToolTip("Codificación Bilineal");
-      plotTitle->setText("Codificación Bilineal");
+      customPlot->setToolTip("Codificación Bipolar");
+      plotTitle->setText("Codificación Bipolar");
     }
     else if (selectedCheckBox == ui->pset_checkBox)
     {
@@ -255,6 +271,35 @@ void MainWindow::plotSelectedMethods()
     customPlot->replot();
     customPlotIt++;
   }
+}
+
+void MainWindow::configureForAndroid()
+{
+  ui->statusBar->setStyleSheet("QScrollBar:horizontal {height: 50px;}");
+  ui->verticalSpacer->changeSize(20, 50);
+  ui->verticalSpacer->invalidate();
+
+  ui->centralWidget->layout()->setSpacing(2);
+  ui->centralWidget->layout()->invalidate();
+
+  QFont radioButtonsFont = ui->l2radioButton->font();
+  radioButtonsFont.setPointSizeF(7.6);
+  ui->l2radioButton->setFont(radioButtonsFont);
+  ui->l4radioButton->setFont(radioButtonsFont);
+  ui->l8radioButton->setFont(radioButtonsFont);
+
+  for (QCheckBox* checkBox : methodCheckBoxes) {
+    checkBox->setStyleSheet("QCheckBox::indicator { width:30px; height: 30px; }");
+    QFont checkBoxFont = checkBox->font();
+    checkBoxFont.setPointSize(7);
+    checkBox->setFont(checkBoxFont);
+  }
+
+  QGridLayout* groupBoxLayout = (QGridLayout*) ui->groupBox->layout();
+  groupBoxLayout->setVerticalSpacing(6);
+  groupBoxLayout->invalidate();
+
+  ui->groupBox->setTitle("Métodos de codificación:");
 }
 
 // Local functions

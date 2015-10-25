@@ -41,6 +41,7 @@ private:
   void configureLineEditFonts();
   void configureCustomPlots();
   void plotSelectedMethods();
+  void configureForAndroid();
 };
 
 #endif // MAINWINDOW_H
