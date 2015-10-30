@@ -41,7 +41,10 @@ private:
   void configureLineEditFonts();
   void configureCustomPlots();
   void plotSelectedMethods();
+  void clearPlots();
+#ifdef Q_OS_ANDROID
   void configureForAndroid();
+#endif
 };
 
 #endif // MAINWINDOW_H

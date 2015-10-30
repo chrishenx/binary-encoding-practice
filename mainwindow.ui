@@ -16,7 +16,7 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>Codificación binaria</string>
+   <string>Codificación binaria - ESIME Culhuacan</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -41,6 +41,12 @@
           </item>
           <item>
            <widget class="QLineEdit" name="messageLineEdit">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>
@@ -66,6 +72,12 @@
           </item>
           <item>
            <widget class="QLineEdit" name="binaryMessageLineEdit">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <pointsize>10</pointsize>

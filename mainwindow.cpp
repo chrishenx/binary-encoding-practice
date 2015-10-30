@@ -91,8 +91,8 @@ void MainWindow::configureLineEditFonts()
 void MainWindow::configureCustomPlots()
 {
   ui->clockPlot->plotLayout()->insertRow(0);
-  ui->clockPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->clockPlot, "Señal de relog"));
-  ui->clockPlot->setToolTip("Señal de relog");
+  ui->clockPlot->plotLayout()->addElement(0, 0, new QCPPlotTitle(ui->clockPlot, "Señal de reloj"));
+  ui->clockPlot->setToolTip("Señal de reloj");
   QCPPlotTitle* plotTitle = (QCPPlotTitle*) ui->clockPlot->plotLayout()->element(0, 0);
   QFont titleFont = plotTitle->font();
   titleFont.setPointSize(11);
@@ -156,11 +156,14 @@ void MainWindow::on_messageLineEdit_textEdited(const QString &input)
   {
     if (!isHexadecimal(input))
     {
+      QToolTip::showText(ui->messageLineEdit->mapToGlobal(QPoint(0, 0)),
+                         "Solo digitos hexadecimales!");
       ui->messageLineEdit->setText(message);
     }
     else
     {
       message = input.toUpper();
+      QToolTip::hideText();
     }
     ui->messageLineEdit->setText(message);
     ui->binaryMessageLineEdit->setText(hex2bin(message));
@@ -169,9 +172,8 @@ void MainWindow::on_messageLineEdit_textEdited(const QString &input)
 
 void MainWindow::on_pushButton_clicked()
 {
-  // TODO Allow user to select less than ALLOWED_METHODS_CHECKED
-  if (selectedCheckBoxes.size() != ALLOWED_METHODS_CHECKED)
-  {
+  if (selectedCheckBoxes.size() > ALLOWED_METHODS_CHECKED)
+  { // TODO Delete this brach since never happens
     ui->statusBar->showMessage("Selecciona 3 métodos.", STATUS_BAR_MESSAGE_DURATION);
   }
   else
@@ -184,6 +186,7 @@ void MainWindow::on_pushButton_clicked()
     else
     {
       // All QCUstomPlots' graphs most exist at this point
+      clearPlots();
       plotSelectedMethods();
     }
   }
@@ -273,23 +276,43 @@ void MainWindow::plotSelectedMethods()
   }
 }
 
+void MainWindow::clearPlots()
+{
+  for (QCustomPlot* customPlot : customPlots) {
+    customPlot->graph(0)->clearData();
+    customPlot->replot();
+    QCPPlotTitle* plotTitle = (QCPPlotTitle*) customPlot->plotLayout()->element(0, 0);
+    plotTitle->setText("");
+  }
+}
+
+#ifdef Q_OS_ANDROID
+
 void MainWindow::configureForAndroid()
 {
-  ui->statusBar->setStyleSheet("QScrollBar:horizontal {height: 50px;}");
+  ui->statusBar->setStyleSheet("QScrollBar:horizontal {height: 60px;}");
   ui->verticalSpacer->changeSize(20, 50);
   ui->verticalSpacer->invalidate();
 
   ui->centralWidget->layout()->setSpacing(2);
   ui->centralWidget->layout()->invalidate();
 
-  QFont radioButtonsFont = ui->l2radioButton->font();
-  radioButtonsFont.setPointSizeF(7.6);
-  ui->l2radioButton->setFont(radioButtonsFont);
-  ui->l4radioButton->setFont(radioButtonsFont);
-  ui->l8radioButton->setFont(radioButtonsFont);
 
+  // QRadioButtons configuration
+  QList<QRadioButton*> radioButtons = {
+    ui->l2radioButton, ui->l4radioButton, ui->l8radioButton
+  };
+
+  for (QRadioButton* radioButton : radioButtons) {
+    QFont radioButtonFont = radioButton->font();
+    radioButtonFont.setPointSizeF(7.6);
+    radioButton->setFont(radioButtonFont);
+    radioButton->setStyleSheet("QRadioButton::indicator { width:31px; height: 31px; }");
+  }
+
+  // QCheckBoxes configuration
   for (QCheckBox* checkBox : methodCheckBoxes) {
-    checkBox->setStyleSheet("QCheckBox::indicator { width:30px; height: 30px; }");
+    checkBox->setStyleSheet("QCheckBox::indicator { width:31px; height: 31px; }");
     QFont checkBoxFont = checkBox->font();
     checkBoxFont.setPointSize(7);
     checkBox->setFont(checkBoxFont);
@@ -299,13 +322,24 @@ void MainWindow::configureForAndroid()
   groupBoxLayout->setVerticalSpacing(6);
   groupBoxLayout->invalidate();
 
+  ui->messageLineEdit->setMinimumHeight(30);
+  ui->binaryMessageLineEdit->setMinimumHeight(30);
+
   ui->groupBox->setTitle("Métodos de codificación:");
+
 }
+
+#endif // Q_OS_ANDROID
 
 // Local functions
 
 QString hex2bin(const QString& hex)
 {
-  int binary = hex.toInt(nullptr, 16);
-  return QString::number(binary, 2);
+  qlonglong binary = hex.toLongLong(nullptr, 16);
+  QString strBinary = QString::number(binary, 2);
+  int necesaryBIts = hex.length() * 4;
+  while (strBinary.length() < necesaryBIts) {
+    strBinary = "0" + strBinary;
+  }
+  return strBinary;
 }
