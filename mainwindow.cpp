@@ -221,14 +221,14 @@ void MainWindow::plotSelectedMethods()
     else if (selectedCheckBox == ui->nrzl_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateNRZL());
-      customPlot->yAxis->setRange(ZERO_LOWER, SIGNAL_AMPLITUDE);
+      customPlot->yAxis->setRange(-SIGNAL_AMPLITUDE, SIGNAL_AMPLITUDE);
       customPlot->setToolTip("Codificación NRZ-L");
       plotTitle->setText("Codificación NRZ-L");
     }
     else if (selectedCheckBox == ui->nrzi_checkBox)
     {
       customPlot->graph(0)->setData(binaryEncoder.generateNRZI());
-      customPlot->yAxis->setRange(ZERO_LOWER, SIGNAL_AMPLITUDE);
+      customPlot->yAxis->setRange(-SIGNAL_AMPLITUDE, SIGNAL_AMPLITUDE);
       customPlot->setToolTip("Codificación NRZ-I");
       plotTitle->setText("Codificación NRZ-I");
     }
