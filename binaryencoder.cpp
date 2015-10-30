@@ -78,7 +78,8 @@ BinaryEncoder::Data BinaryEncoder::generateNRZL()
   const double T = 1.0 / f;
   double t = 0.0;
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT) {
-    const double amplitude = mValueToEncode[i / POINTS_PER_BIT].digitValue() ? 0 : mAmplitude;
+    const double amplitude = mValueToEncode[i / POINTS_PER_BIT].digitValue() ?
+          -mAmplitude : mAmplitude;
     nrzl[i] = make_pair(t, amplitude);
     nrzl[i + 1] = make_pair(t += T, amplitude);
   }
@@ -94,12 +95,12 @@ BinaryEncoder::Data BinaryEncoder::generateNRZI()
   const double f = mTransSpeed;
   const double T = 1.0 / f;
   double t = 0.0;
-  double amplitude = 0;
+  double amplitude = -mAmplitude;
   for (int i = 0; i < POINT_COUNT; i += POINTS_PER_BIT)
   {
     if (mValueToEncode[i / POINTS_PER_BIT].digitValue()) // Transition?
     {
-      amplitude = amplitude == mAmplitude ? 0 : mAmplitude;
+      amplitude = amplitude == mAmplitude ? -mAmplitude : mAmplitude;
     }
     nrzi[i] = make_pair(t, amplitude);
     nrzi[i + 1] = make_pair(t += T, amplitude);
